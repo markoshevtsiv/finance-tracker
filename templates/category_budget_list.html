@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Category Budget{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Category Budget</h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'budget_list' %}" class='btn btn-outline-success'>
+                    Budget
+                </a>
+            </div>
+
+        </div>
+        <h3>{{ category_budgets.0.month|date:"F Y" }}</h3>
+        {% if category_budgets %}
+        <form method="get" class="mb-3">
+            <select name="month" class="form-select" onchange="this.form.submit()">
+                {% for m in available_months %}
+                    <option value="{{ m|date:'Y-m' }}"{% if request.GET.month == m|date:'Y-m' %} selected{% endif %}>
+                        {{ m|date:'F Y' }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Budget</th>
+                    <th>Spent</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Progres</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for category_budget in category_budgets %}
+                    <tr>
+                        <td>{{ category_budget.category.name }}</td>
+                        <td>{{ category_budget.amount}}</td>
+                        <td>{{ category_budget.spent|floatformat:2 }}</td>
+                        <td>{{ category_budget.remaining|floatformat:2}}</td>
+                        <td>
+                            {% if category_budget.remaining < 0 %}
+                                <span class="badge bg-danger">Over</span>
+                            {% else %}
+                                <span class="badge bg-success">OK</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="progress mt-2 me-3">
+                                <div class="progress-bar" style="width: {{ category_budget.progress }}%;"></div>
+                            </div>
+                        </td>
+                        <td>
+                        <a href="{% url 'category_budget_update' category_budget.pk %}" class="btn btn-sm btn-warning me-1">Edit</a>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No category budget created yet</p>
+        {% endif %}
+
+    {% if is_paginated %}
+
+        <nav class="mt-auto mb-4 d-flex justify-content-center">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+            {% endif %}
+            <span class="mx-2 mt-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+
+
+    </div>
+{% endblock %}

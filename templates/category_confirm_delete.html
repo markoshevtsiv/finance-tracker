@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %} Delete Category {% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Delete Category</h1>
+
+        <p>Are you sure you want to delete selected category?</p>
+
+        <div class="alert alert-warning">
+                <strong>Warning:</strong> All transactions linked to this category will be deleted permanently.
+        </div>
+
+        <ul>
+            <li><strong>Name:</strong> {{ object.name }}</li>
+            <li><strong>Type:</strong> {{ object.type}}</li>
+        </ul>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete and save</button>
+            <a href="{% url 'transaction_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

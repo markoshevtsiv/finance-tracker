@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %} Delete Transaction {% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Delete Transaction</h1>
+
+        <p>Are you sure you want to delete <strong>{{ transaction.category }} Transaction?</strong></p>
+
+        <ul>
+            <li><strong>Date:</strong> {{ object.name }}</li>
+            <li><strong>Category:</strong> {{ object.category.name }}</li>
+            <li><strong>Amount:</strong> {{ object.amount }}</li>
+            <li><strong>Description:</strong> {{ object.description }}</li>
+        </ul>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete and save</button>
+            <a href="{% url 'transaction_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

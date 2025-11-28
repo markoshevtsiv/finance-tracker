@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %} Delete Budget {% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1>Delete Budget</h1>
+
+        <p>Are you sure you want to delete selected budget?</p>
+
+        <div class="alert alert-warning">
+                <strong>Warning:</strong> All transactions linked to this budget will NOT be deleted.
+        </div>
+
+        <ul>
+            <li>
+    <strong>{{ object.month_budget|date:"F Y" }}</strong> - {{ object.amount }}
+            </li>
+        </ul>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger" type="submit">Delete and save</button>
+            <a href="{% url 'budget_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

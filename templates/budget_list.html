@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Your Budgets{% endblock %}
+
+{% block content %}
+    <div class="row g-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class='fw-bold'>Budget</h1>
+            <div class="d-flex gap-2">
+                 <a href="{% url 'category_budget_list'%}" class="btn btn-outline-success">
+                    Category Budget
+                </a>
+                <a href="{% url 'budget_create' %}" class="btn btn-success">
+                    + Add Budget
+                </a>
+            </div>
+        </div>
+    </div>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body p-4">
+                {% if latest_budget %}
+                    <h5>{{ latest_budget.month_budget|date:"F Y" }}</h5>
+
+                    <p><strong>Budget:</strong> {{ latest_budget.amount }}</p>
+                    {% if latest_budget.exceeded %}
+                        <p style="color: red; font-weight: bold;"><strong>Expenses:</strong> {{ latest_budget.expenses|floatformat:2 }}</p>
+                    {% else %}
+                        <p >
+                            <strong>Expenses:</strong>
+                            <a style="color: red; font-weight: bold;" >{{ latest_budget.expenses|floatformat:2 }}</a>
+                        </p>
+                    {% endif %}
+                    {% if latest_budget.remaining < 0 %}
+                    <p style="color: red; font-weight: bold;"><strong>Remaining:</strong>
+                        <a style="color: red; font-weight: bold;">{{ latest_budget.remaining|floatformat:2  }}</a>
+                    </p>
+                    {% else %}
+                     <p>
+                     <strong>Remaining:</strong>
+                     <a style="color: green; font-weight: bold;">{{ latest_budget.remaining|floatformat:2  }}</a>
+                     </p>
+                    {% endif %}
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ latest_budget.progress }}%;"></div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Month</th>
+            <th>Budget</th>
+            <th>Income</th>
+            <th>Expenses</th>
+            <th>Remaining</th>
+            <th>Progress</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+            <tbody>
+                {% for budget in budgets %}
+                <tr>
+                    <td>{{ budget.month_budget|date:"F Y" }}</td>
+
+                    <td>{{ budget.amount }}</td>
+
+                    <td>
+{#                        {% if budget.income > 0 %}#}
+{#                        <span style="color: green; font-weight: bold;">{{ budget.income|floatformat:2 }}</span>#}
+{#                        {% else %}#}
+                        {{ budget.income|floatformat:2 }}
+{#                        {% endif %}#}
+                    </td>
+
+                    <td>
+                        {% if budget.exceeded %}
+                            <span style="color: red; font-weight: bold;">
+                                {{ budget.expenses|floatformat:2 }}
+                            </span>
+                        {% else %}
+                            {{ budget.expenses|floatformat:2 }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if budget.remaining < 0 %}
+                            <span style="color: red; font-weight: bold;">
+                                {{ budget.remaining|floatformat:2 }}
+                            </span>
+                        {% else %}
+                            <span style="color: green; font-weight: bold;">
+                            {{ budget.remaining|floatformat:2 }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="progress mt-2 me-3">
+                            <div class="progress-bar" style="width: {{ budget.progress }}%;"></div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <a href="{% url 'budget_update' budget.pk %}" class="btn btn-sm btn-warning ">Edit</a>
+                        <a href="{% url 'budget_delete' budget.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+                </tbody>
+                {% empty %}
+                    <p>No budgets yet.</p>
+                {% endfor %}
+
+
+            </table>
+
+    {% if is_paginated %}
+
+        <nav class="mt-auto mb-4 d-flex justify-content-center">
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+            {% endif %}
+            <span class="mx-2 mt-1">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+            {% endif %}
+        </nav>
+
+    {% endif %}
+
+{% endblock %}
