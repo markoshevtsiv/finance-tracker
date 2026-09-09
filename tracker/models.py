@@ -48,9 +48,11 @@ class MonthBudget(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['month_budget'], name='unique_month_budget')
+            models.UniqueConstraint(
+                fields=["user", "month_budget"],
+                name="unique_user_month_budget",
+            )
         ]
-
 
     def __str__(self):
         return f'Budget -{self.amount} - {self.month_budget}'
