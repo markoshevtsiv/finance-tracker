@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.db import models
-from django.db.models import DateField
 
 from .models import Category, MonthBudget, Transaction, CategoryBudget
 
@@ -19,6 +17,7 @@ class TransactionForm(forms.ModelForm):
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
+
 
 class CategoryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -45,6 +44,7 @@ class BudgetForm(forms.ModelForm):
     def clean_month_budget(self):
         date = self.cleaned_data['month_budget']
         return date.replace(day=1)
+
 
     class Meta:
         model = MonthBudget

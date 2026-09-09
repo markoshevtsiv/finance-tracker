@@ -1,5 +1,7 @@
 import json
 
+import csv
+
 from django.contrib import messages
 
 from dateutil.parser import parse
@@ -7,18 +9,24 @@ from dateutil.parser import parse
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Sum, Q
-from django.shortcuts import render, redirect
+from django.db.models.functions import TruncMonth
+from django.forms import model_to_dict
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView, TemplateView
-from .forms import CategoryForm, TransactionForm, BudgetForm, CategoryBudgetForm, CSVImportForm, LoginForm, RegisterForm
-from .models import Category, Transaction, MonthBudget, CategoryBudget
-import csv
+from django.views.generic import CreateView, UpdateView, DeleteView, ListView, TemplateView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from django.db.models.functions import TruncMonth
+from .forms import CategoryForm, TransactionForm, BudgetForm, CategoryBudgetForm, CSVImportForm, LoginForm, RegisterForm
+from tracker.serializers import TransactionSerializer
+from .models import Category, Transaction, MonthBudget, CategoryBudget
+from rest_framework import generics
+
 
 
 # Create your views here.
@@ -34,6 +42,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+
 class TransactionUpdateView(LoginRequiredMixin, UpdateView):
     model = Transaction
     form_class = TransactionForm
@@ -41,11 +50,11 @@ class TransactionUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('transaction_list')
 
 
-
 class TransactionDeleteView(LoginRequiredMixin, DeleteView):
     model = Transaction
     template_name = 'transaction_confirm_delete.html'
     success_url = reverse_lazy('transaction_list')
+
 
 class TransactionListView(LoginRequiredMixin, ListView):
     model = Transaction
@@ -59,6 +68,14 @@ class TransactionListView(LoginRequiredMixin, ListView):
         queryset = super().get_queryset().filter(user=self.request.user)
         search_query = self.request.GET.get('search')
         category_filter = self.request.GET.get('filter')
+        month_filter = self.request.GET.get('month')
+
+        if month_filter:
+            year, month = map(int, month_filter.split('-'))
+            queryset = queryset.filter(
+                date__year=year,
+                date__month=month,
+            )
 
 
         if category_filter == 'Income':
@@ -77,6 +94,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
 
         return queryset
 
+
 #Category
 class CategoryCreateView(LoginRequiredMixin, CreateView):
     model = Category
@@ -88,16 +106,19 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+
 class CategoryUpdateView(LoginRequiredMixin, UpdateView):
     model = Category
     form_class = CategoryForm
     template_name = 'category_form.html'
     success_url = reverse_lazy('category_list')
 
+
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     model = Category
     template_name = 'category_confirm_delete.html'
     success_url = reverse_lazy('category_list')
+
 
 class CategoryListView(LoginRequiredMixin, ListView):
     model = Category
@@ -126,7 +147,6 @@ class CategoryListView(LoginRequiredMixin, ListView):
         return queryset
 
 
-
 #Budget(month)
 class BudgetCreateView(LoginRequiredMixin, CreateView):
     model = MonthBudget
@@ -150,6 +170,7 @@ class BudgetCreateView(LoginRequiredMixin, CreateView):
             )
 
         return response
+
 
 class BudgetListView(LoginRequiredMixin, ListView):
     model = MonthBudget
@@ -222,12 +243,12 @@ class BudgetListView(LoginRequiredMixin, ListView):
         return context
 
 
-
 class BudgetUpdateView(LoginRequiredMixin, UpdateView):
     model = MonthBudget
     form_class = BudgetForm
     template_name = 'budget_form.html'
     success_url = reverse_lazy('budget_list')
+
 
 class BudgetDeleteView(LoginRequiredMixin, DeleteView):
     model = MonthBudget
@@ -507,3 +528,17 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'Now you are logged out!')
     return redirect('home')
+
+
+class TransactionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        w = Transaction.objects.all()
+        return Response({'transactions': TransactionSerializer(w, many=True).data})
+
+    def post(self, request):
+        serializer = TransactionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = serializer.save(user=request.user)
+        return Response({"transaction": TransactionSerializer(obj).data}, status=201)

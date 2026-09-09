@@ -6,7 +6,7 @@ from .views import (
     TransactionListView, TransactionCreateView, TransactionUpdateView, TransactionDeleteView,
     CategoryListView, CategoryCreateView, CategoryUpdateView, CategoryDeleteView,
     BudgetListView, BudgetCreateView, BudgetUpdateView, BudgetDeleteView, HomeView, CategoryBudgetListView,
-    CategoryBudgetUpdateView, import_csv, login_view, register_view, logout_view
+    CategoryBudgetUpdateView, import_csv, login_view, register_view, logout_view, TransactionAPIView
 )
 
 urlpatterns = [
@@ -42,5 +42,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
+    path('api/v1/transactionslist/', TransactionAPIView.as_view()),
+
 ]
 

@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
+from decimal import Decimal
 
 TYPE_CHOICE = [
     ('Income', 'Income'),
@@ -31,7 +33,7 @@ class Category(models.Model):
 
 class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     date = models.DateField()
     description = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
