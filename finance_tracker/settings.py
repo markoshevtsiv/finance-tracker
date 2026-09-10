@@ -152,8 +152,12 @@ RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN")
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-CSRF_TRUSTED_ORIGINS = []
+CSRF_TRUSTED_ORIGINS = [
+    "https://finance-tracker-production-7405.up.railway.app"
+]
 
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
     CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
+
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
