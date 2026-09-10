@@ -517,6 +517,29 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             username = form.save()
+
+            default_categories = [
+                {"name": "Food", "type": "Expense", "color": "#FF0000"},
+                {"name": "Transport", "type": "Expense", "color": "#0000FF"},
+                {"name": "Housing", "type": "Expense", "color": "#FFA500"},
+                {"name": "Shopping", "type": "Expense", "color": "#FFC0CB"},
+                {"name": "Health", "type": "Expense", "color": "#00FF00"},
+                {"name": "Entertainment", "type": "Expense", "color": "#800080"},
+                {"name": "Other Expenses", "type": "Expense", "color": "#808080"},
+
+                {"name": "Salary", "type": "Income", "color": "#00FF00"},
+                {"name": "Freelance", "type": "Income", "color": "#00FFFF"},
+                {"name": "Other Income", "type": "Income", "color": "#008080"},
+            ]
+
+            for category in default_categories:
+                Category.objects.create(
+                    user=username,
+                    name=category['name'],
+                    type=category['type'],
+                    color=category['color'],
+                )
+
             login(request, username)
             messages.success(request, 'You are now registered!')
 
