@@ -42,6 +42,11 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
 
 class TransactionUpdateView(LoginRequiredMixin, UpdateView):
     model = Transaction
@@ -122,14 +127,38 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
 
 class CategoryListView(LoginRequiredMixin, ListView):
     model = Category
-    template_name = 'category_list.html'
-    context_object_name = 'categories'
+    template_name = "category_list.html"
+    context_object_name = "categories"
     paginate_by = 8
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(user=self.request.user)
-        category_filter = self.request.GET.get('filter')
-        search_query = self.request.GET.get('search')
+        default_categories = [
+            {"name": "Food", "type": "Expense", "color": "#FF0000"},
+            {"name": "Transport", "type": "Expense", "color": "#0000FF"},
+            {"name": "Housing", "type": "Expense", "color": "#FFA500"},
+            {"name": "Shopping", "type": "Expense", "color": "#FFC0CB"},
+            {"name": "Health", "type": "Expense", "color": "#00FF00"},
+            {"name": "Entertainment", "type": "Expense", "color": "#800080"},
+            {"name": "Other Expenses", "type": "Expense", "color": "#808080"},
+            {"name": "Salary", "type": "Income", "color": "#00FF00"},
+            {"name": "Freelance", "type": "Income", "color": "#00FFFF"},
+            {"name": "Other Income", "type": "Income", "color": "#008080"},
+        ]
+
+        for category in default_categories:
+            Category.objects.get_or_create(
+                user=self.request.user,
+                name=category["name"],
+                defaults={
+                    "type": category["type"],
+                    "color": category["color"],
+                },
+            )
+
+        queryset = Category.objects.filter(user=self.request.user)
+
+        category_filter = self.request.GET.get("filter")
+        search_query = self.request.GET.get("search")
 
         if search_query:
             queryset = queryset.filter(
@@ -137,15 +166,12 @@ class CategoryListView(LoginRequiredMixin, ListView):
                 Q(type__icontains=search_query)
             )
 
+        if category_filter == "Income":
+            queryset = queryset.filter(type="Income")
+        elif category_filter == "Expense":
+            queryset = queryset.filter(type="Expense")
 
-        if category_filter == 'Income':
-            queryset = queryset.filter(type='Income')
-        elif category_filter == 'Expense':
-            queryset = queryset.filter(type='Expense')
-        elif category_filter == 'all' or category_filter is None:
-            queryset = queryset.all()
         return queryset
-
 
 #Budget(month)
 class BudgetCreateView(LoginRequiredMixin, CreateView):

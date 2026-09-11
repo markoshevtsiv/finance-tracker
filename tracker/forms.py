@@ -7,9 +7,13 @@ from .models import Category, MonthBudget, Transaction, CategoryBudget
 
 class TransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({'class': 'form-control'})
+
+        if user:
+            self.fields["category"].queryset = Category.objects.filter(user=user)
+        else:
+            self.fields["category"].queryset = Category.objects.none()
 
     class Meta:
         model = Transaction
