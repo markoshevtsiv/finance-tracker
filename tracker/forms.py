@@ -7,19 +7,22 @@ from .models import Category, MonthBudget, Transaction, CategoryBudget
 
 class TransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user')
+        user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs.update({"class": "form-control"})
 
         if user:
             self.fields["category"].queryset = Category.objects.filter(user=user)
-        else:
-            self.fields["category"].queryset = Category.objects.none()
 
     class Meta:
         model = Transaction
-        fields = ['category', 'amount', 'date', 'description']
+        fields = ["category", "amount", "date", "description"]
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            "date": forms.DateInput(
+                attrs={"type": "date", "class": "form-control"}
+            ),
         }
 
 
@@ -36,7 +39,6 @@ class CategoryForm(forms.ModelForm):
             'type': forms.Select(attrs={'class': 'form-control'}),
             'color': forms.Select(attrs={'class': 'form-control'})
         }
-
 
 
 class BudgetForm(forms.ModelForm):
@@ -58,7 +60,6 @@ class BudgetForm(forms.ModelForm):
         }
 
 
-
 class CategoryBudgetForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -77,6 +78,7 @@ class CSVImportForm(forms.Form):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=25)
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
 
 class RegisterForm(UserCreationForm):
     model = User
